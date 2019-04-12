@@ -1,3 +1,14 @@
+(** [gcd a b] is the greatest common divisor of integers [a] and [b] using
+    Euclid's algorithm *)
+let rec gcd (a : int) (b : int) : int =
+  if b = 0 then a
+  else gcd b (a mod b)
+
+(** [lcm a b] is the least common multiple of integers [a] and [b] *)
+let lcm (a : int) (b : int) : int =
+  if a = 0 && b = 0 then 0
+  else (abs (a * b)) / (gcd a b)
+
 (** [is_prime n] is true if integer [n] is prime, and false otherwise *)
 let is_prime (n : int) : bool =
   failwith "Not yet implemented"

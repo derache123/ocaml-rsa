@@ -1,3 +1,9 @@
+type publickey = {n: int; e: int}
+
+type privatekey = {n: int; d: int}
+
+type keyset = (publickey * privatekey)
+
 (** [gcd a b] is the greatest common divisor of integers [a] and [b] using
     Euclid's algorithm *)
 let rec gcd (a : int) (b : int) : int =
@@ -29,6 +35,33 @@ let rec gen_prime (m : int) (n : int) : int =
 (** [mod_exp b e m] is the result of the modular exponentiation operation given
     base [b], exponent [e], and modulus [m] *)
 let mod_exp (b : int) (e : int) (m : int) : int =
+  if m = 1 then 0
+  else let c = 1 in
+    let rec loop i c b e m =
+      if i = e then c
+      else loop (i + 1) ((c * b) mod m) b e m
+    in loop 0 c b e m
+
+(** [gen_keys p q e] is an RSA keyset generated using primes [p] and [q] and
+    exponent [e] *)
+let gen_keys (p : int) (q : int) (e : int) : keyset =
+  let n = p * q in
+  let euler_totient = (p - 1) * (q - 1) in
+  let carmichael_totient = lcm (p - 1) (q - 1) in
+  (* calculate the modular multiplicative inverse of e using Euler's theorem *)
+  let d = mod_exp e (euler_totient - 1) carmichael_totient in
+  ({n = n; e = e}, {n = n; d = d})
+
+(** [explode s] is a list of chars of each character in string [s] *)
+let explode s = List.init (String.length s) (String.get s)
+
+let encode (s : string) : string =
+  let explosion = explode s in
+  let map_function c =
+    string_of_int (Char.code c)
+  in String.concat "" (List.map map_function explosion)
+
+let decode (s : string) : string =
   failwith "Not yet implemented"
 
 let encrypt (m : string) (e : int) : string =

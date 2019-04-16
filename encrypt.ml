@@ -2,7 +2,7 @@ type publickey = {n: int; e: int}
 
 type privatekey = {n: int; d: int}
 
-type keyset = (publickey * privatekey)
+type keyset = {public_key: publickey; private_key: privatekey}
 
 (** [gcd a b] is the greatest common divisor of integers [a] and [b] using
     Euclid's algorithm *)
@@ -48,7 +48,7 @@ let gen_keys (p : int) (q : int) (e : int) : keyset =
   let carmichael_totient = lcm (p - 1) (q - 1) in
   (* calculate the modular multiplicative inverse of e using Euler's theorem *)
   let d = mod_exp e (euler_totient - 1) carmichael_totient in
-  ({n = n; e = e}, {n = n; d = d})
+  {public_key = {n = n; e = e}; private_key = {n = n; d = d}}
 
 (** [explode s] is a list of chars of each character in string [s] *)
 let explode s = List.init (String.length s) (String.get s)
@@ -62,8 +62,11 @@ let encode (s : string) : string =
 let decode (s : string) : string =
   failwith "Not yet implemented"
 
-let encrypt (m : string) (e : int) : string =
-  failwith "Not yet implemented"
+let encrypt (m : string) (k : publickey) : string =
+  (* temporary hardcoded value for testing *)
+  let plaintext = 65 in
+  string_of_int (mod_exp plaintext k.e k.n)
 
-let decrypt (c : string) (d : int) : string =
-  failwith "Not yet implemented"
+let decrypt (c : string) (k : privatekey) : string =
+  let cyphertext = int_of_string c in
+  string_of_int (mod_exp cyphertext k.d k.n)

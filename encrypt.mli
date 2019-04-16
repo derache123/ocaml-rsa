@@ -11,6 +11,10 @@ type privatekey
     private key. *)
 type keyset
 
+(** [gen_keys p q e] is an RSA keyset generated using primes [p] and [q] and
+    exponent [e] *)
+val gen_keys : int -> int -> int -> keyset
+
 (** [encrypt m e] is the cyphertext of plaintext message [m] encrypted with
     public key [e] *)
 val encrypt : string -> int -> string

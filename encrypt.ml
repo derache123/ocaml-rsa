@@ -42,8 +42,6 @@ let mod_exp (b : int) (e : int) (m : int) : int =
       else loop (i + 1) ((c * b) mod m) b e m
     in loop 0 c b e m
 
-(** [gen_keys p q e] is an RSA keyset generated using primes [p] and [q] and
-    exponent [e] *)
 let gen_keys (p : int) (q : int) (e : int) : keyset =
   let n = p * q in
   let euler_totient = (p - 1) * (q - 1) in

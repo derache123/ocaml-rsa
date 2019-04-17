@@ -1,5 +1,7 @@
 (** RSA Implementation *)
 
+open Big_int
+
 (** Type representing a public key *)
 type publickey
 

@@ -1,3 +1,5 @@
+(* open Big_int *)
+
 type publickey = {n: int; e: int}
 
 type privatekey = {n: int; d: int}
@@ -42,31 +44,75 @@ let mod_exp (b : int) (e : int) (m : int) : int =
       else loop (i + 1) ((c * b) mod m) b e m
     in loop 0 c b e m
 
+(** Helper type representing local variables in function [mod_inv] *)
+type mod_inv_vars = {u1: int; u3: int; v1: int; v3: int; t1: int; t3: int; iter: int}
+
+(** [mod_inv u v] is the modular inverse of [u] mod [v] *)
+let mod_inv (u: int) (v: int) : int =
+  let vars = {u1 = 1; u3 = u; v1 = 0; v3 = v; t1 = 0; t3 = 0; iter = 1} in
+  let rec loop x =
+    if x.v3 = 0 then x
+    else loop {u1 = x.v1; u3 = x.v3; v1 = x.u1 + ((x.u3 / x.v3) * x.v1); v3 = (x.u3 mod x.v3); t1 = x.u1 + ((x.u3 / x.v3) * x.v1); t3 = (x.u3 mod x.v3); iter = -(x.iter)}
+  in let y = loop vars in
+  if y.u3 <> 1 then 0
+  else if y.iter < 0 then v - y.u1
+  else y.u1
+
 let gen_keys (p : int) (q : int) (e : int) : keyset =
   let n = p * q in
-  let euler_totient = (p - 1) * (q - 1) in
-  let carmichael_totient = lcm (p - 1) (q - 1) in
-  (* calculate the modular multiplicative inverse of e using Euler's theorem *)
-  let d = mod_exp e (euler_totient - 1) carmichael_totient in
+  let totient = (p - 1) * (q - 1) in
+  (* calculate the modular inverse of e mod totient(n) *)
+  let d = mod_inv e totient in
   {public_key = {n = n; e = e}; private_key = {n = n; d = d}}
 
 (** [explode s] is a list of chars of each character in string [s] *)
 let explode s = List.init (String.length s) (String.get s)
 
-let encode (s : string) : string =
-  let explosion = explode s in
-  let map_function c =
-    string_of_int (Char.code c)
-  in String.concat "" (List.map map_function explosion)
+(** [encode_char c] is an integer encoding of character [c].
+    The encoding scheme is the character's ASCII code - 23.
+    The space character will be encoded with a padding: 09.
+    Requires: [c] has an ASCII code between 32 and 122, inclusive. *)
+let encode_char (c : char) : string =
+  match c with
+  | ' ' -> "09"
+  | _ -> string_of_int (Char.code c - 23)
 
-let decode (s : string) : string =
-  failwith "Not yet implemented"
+(** [encode s] is an integer encoding of string [s]. *)
+(* let encode (s : string) : Big_int.big_int =
+   Big_int.big_int_of_string (String.concat "" (List.map encode_char (explode s))) *)
+let encode (s : string) : int =
+  int_of_string (String.concat "" (List.map encode_char (explode s)))
+
+let decode_char (s : string) : char =
+  Char.chr ((int_of_string s) + 23)
+
+(* let decode (n : Big_int.big_int) : string =
+   let explosion = explode (Big_int.string_of_big_int n) in
+   let rec helper nums chars = 
+    if nums = [] then String.concat "" (List.rev chars)
+    else match nums with
+      | a::b::t -> helper t ((Char.escaped (decode_char  (String.concat "" [(Char.escaped a); (Char.escaped b)])))::chars)
+      | _ -> failwith "impossibru"
+   in helper explosion [] *)
+let decode (n : int) : string =
+  let explosion = explode (string_of_int n) in
+  let rec helper nums chars = 
+    if nums = [] then String.concat "" (List.rev chars)
+    else match nums with
+      | a::b::t -> helper t ((Char.escaped (decode_char  (String.concat "" [(Char.escaped a); (Char.escaped b)])))::chars)
+      | _ -> failwith "impossibru"
+  in helper explosion []
+
+let encrypt_int (m : int) (k : publickey) : int =
+  mod_exp m k.e k.n
 
 let encrypt (m : string) (k : publickey) : string =
-  (* temporary hardcoded value for testing *)
-  let plaintext = 65 in
+  let plaintext = encode m in
   string_of_int (mod_exp plaintext k.e k.n)
+
+let decrypt_int (c : int) (k : privatekey) : int =
+  mod_exp c k.d k.n
 
 let decrypt (c : string) (k : privatekey) : string =
   let cyphertext = int_of_string c in
-  string_of_int (mod_exp cyphertext k.d k.n)
+  decode (mod_exp cyphertext k.d k.n)

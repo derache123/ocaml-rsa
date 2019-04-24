@@ -1,11 +1,14 @@
-(* import Big_int *)
-#load "nums.cma" ;;
-
 type publickey = {n: string; e: string}
 
 type privatekey = {n: string; d: string}
 
 type keyset = {public_key: publickey; private_key: privatekey}
+
+let publickey_from_keyset ks =
+  ks.public_key
+
+let privatekey_from_keyset ks =
+  ks.private_key
 
 let string_of_publickey (k : publickey) =
   k.n ^ "$" ^ k.e

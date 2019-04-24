@@ -1,7 +1,5 @@
 (** RSA Implementation *)
 
-open Big_int
-
 (** Type representing a public key *)
 type publickey
 
@@ -10,6 +8,12 @@ type privatekey
 
 (** Type representing a keyset consisting of a private key and public key. *)
 type keyset
+
+(** [publickey_from_keyset ks] is the public key from keyset [ks]. *)
+val publickey_from_keyset : keyset -> publickey
+
+(** [privatekey_from_keyset ks] is the private key from keyset [ks]. *)
+val privatekey_from_keyset : keyset -> privatekey
 
 (** [string_of_publickey k] is a string representation of public key [k].
     The string representation is the concatenation of the n and e portions
@@ -33,7 +37,7 @@ val privatekey_of_string : string -> privatekey
 
 (** [gen_keys n e] is an RSA keyset generated using primes of length [n] digits
     and exponent [e]. *)
-val gen_keys : int -> int -> int -> keyset
+val gen_keys : int -> int -> keyset
 
 (** [encrypt m k] is the cyphertext of plaintext message [m] encrypted with
     the public key represented by string [k]. *)

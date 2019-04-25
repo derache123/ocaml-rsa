@@ -40,7 +40,9 @@ val privatekey_of_string : string -> privatekey
 val gen_keys : int -> int -> keyset
 
 (** [encrypt m k] is the cyphertext of plaintext message [m] encrypted with
-    the public key represented by string [k]. *)
+    the public key represented by string [k].
+    Requires: message [m] consists of only characters within the range of
+    ASCII codes 32 - 122, inclusive. *)
 val encrypt : string -> string -> string
 
 (** [decrypt c k] is the decrypted plaintext message of cyphertext [c]

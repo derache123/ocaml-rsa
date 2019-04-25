@@ -1,3 +1,5 @@
+#load "nums.cma"
+
 type publickey = {n: string; e: string}
 
 type privatekey = {n: string; d: string}
@@ -168,7 +170,6 @@ let decode_char (s : string) : char =
 
 (** [decode n] is the string represented by the big integer [n]. *)
 let decode (n : Big_int.big_int) : string =
-  let explosion = explode (Big_int.string_of_big_int n) in
   let rec helper nums chars = 
     if nums = [] then String.concat "" (List.rev chars)
     else match nums with
@@ -177,8 +178,12 @@ let decode (n : Big_int.big_int) : string =
                                                 [(Char.escaped a);
                                                  (Char.escaped b)])))
                              ::chars)
-      | _ -> failwith "impossibru"
-  in helper explosion []
+      | _ -> failwith "impossibru" in
+  let string_of_n = Big_int.string_of_big_int n in
+  if String.length string_of_n mod 2 = 1
+  then let actual_string = "0" ^ string_of_n in
+    helper (explode actual_string) []
+  else helper (explode string_of_n) []
 
 let encrypt (m : string) (k : string) : string =
   let key = publickey_of_string k in

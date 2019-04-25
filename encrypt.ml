@@ -130,7 +130,9 @@ let gen_random_number n =
 
 let gen_keys n e =
   let rec gen_primes (n : int) e : (Big_int.big_int * Big_int.big_int) =
-    let nums = ((gen_random_number n), (gen_random_number n)) in
+    let random_padding = Random.int 5 in
+    let nums = ((gen_random_number (n + random_padding)),
+                (gen_random_number (n - random_padding))) in
     let totient = (bpred (fst nums)) $* (bpred (snd nums)) in
     if is_prime (fst nums) && is_prime (snd nums) then
       if (gcd e totient) $= one then nums

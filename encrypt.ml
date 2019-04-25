@@ -120,25 +120,29 @@ let mod_inv u v =
   else if y.iter < 0 then v $- y.u1
   else y.u1
 
-(** [gen_random_number n] is a random number with n digits. 
+(** [gen_random_number n] is a random odd number with n digits. 
     Requires: n >= 1*)
 let gen_random_number n =
   let rec helper m str =
     if m = 0 then Big_int.big_int_of_string str
+    else if m = 1 then helper (m - 1)
+        (str ^ (string_of_int (2 * (Random.int 5) + 1)))
     else helper (m - 1) (str ^ (string_of_int (Random.int 10)))
   in helper (n - 1) (string_of_int ((Random.int 9) + 1))
 
 let gen_keys n e =
+  let rec gen_prime m n =
+    if m $= zero then let num = gen_random_number n in
+      if is_prime num then num else gen_prime num n
+    else if is_prime m then m else gen_prime (m $+ (big 2)) n in
   let rec gen_primes (n : int) e : (Big_int.big_int * Big_int.big_int) =
-    let random_padding = Random.int 5 in
-    let nums = ((gen_random_number (n + random_padding)),
-                (gen_random_number (n - random_padding))) in
+    let nums = (gen_prime zero n, gen_prime zero n) in
     let totient = (bpred (fst nums)) $* (bpred (snd nums)) in
     if is_prime (fst nums) && is_prime (snd nums) then
       if (gcd e totient) $= one then nums
       else gen_primes n e
-    else gen_primes n e
-  in let primes = gen_primes n (big e) in
+    else gen_primes n e in
+  let primes = gen_primes n (big e) in
   let n = (fst primes) $* (snd primes) in
   let totient = (bpred (fst primes)) $* (bpred (snd primes)) in
   (* calculate the modular inverse of e mod totient(n) *)

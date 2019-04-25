@@ -179,11 +179,14 @@ let decode (n : Big_int.big_int) : string =
   let rec helper nums chars = 
     if nums = [] then String.concat "" (List.rev chars)
     else match nums with
-      | a::b::t -> helper t ((Char.escaped
-                                (decode_char (String.concat ""
+      | a::b::t ->
+        (* Get rid of the dumb escape characters *)
+        let str = (Char.escaped (decode_char (String.concat ""
                                                 [(Char.escaped a);
-                                                 (Char.escaped b)])))
-                             ::chars)
+                                                 (Char.escaped b)]))) in
+        if (String.length str) = 2
+        then helper t ((String.sub str 1 1)::chars)
+        else helper t (str::chars)
       | _ -> failwith "impossibru" in
   let string_of_n = Big_int.string_of_big_int n in
   if String.length string_of_n mod 2 = 1
